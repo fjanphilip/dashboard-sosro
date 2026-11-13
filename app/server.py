@@ -1380,7 +1380,7 @@ class Handler(BaseHTTPRequestHandler):
         """Autentikasi + otorisasi + validasi dasar. Return True kalau request sudah ditolak.
 
         Static file tetap publik. Semua /api butuh sesi; /api/login pengecualian.
-        Hanya role admin yang boleh menulis data atau mengakses koneksi database."""
+        Hanya role admin yang boleh menulis data atau mengelola akun."""
         if not path.startswith("/api/"):
             return False
         if path == "/api/login":
@@ -1390,7 +1390,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json(401, {"error": "belum login"})
             return True
         if sess["role"] != "admin":
-            admin_only = (path.startswith("/api/db-status") or path.startswith("/api/users")
+            admin_only = (path.startswith("/api/users")
                           or (path.startswith("/api/devices") and method != "GET"))
             if admin_only:
                 self._json(403, {"error": "butuh akses admin"})
@@ -1469,10 +1469,6 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/me":
             sess = self._session()
             return self._json(200, {"username": sess["username"], "role": sess["role"]})
-        if path == "/api/db-status":  # admin; read-only, password tidak pernah dikirim
-            cfg = get_active_connection()
-            shown = {k: cfg[k] for k in ("host", "port", "db_user", "db_name", "store_interval_s")} if cfg else None
-            return self._json(200, {"config": shown, "status": STORER.status()})
         if path == "/api/status":
             s = STORER.status(with_pending=False)
             return self._json(200, {"db": {"state": s["state"], "error": s["error"],

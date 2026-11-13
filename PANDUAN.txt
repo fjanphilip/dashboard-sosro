@@ -15,9 +15,16 @@ PEMASANGAN (sekali)
 2. Klik kanan SETUP.bat > Run as administrator.
 3. Isi: alamat MySQL, port, user, nama database, lalu password.
    Berhasil jika muncul "[OK] Database ... dan tabel power_readings siap".
+   Koneksi tersimpan di app\database.json dan dipakai otomatis oleh dashboard (tidak ada menu koneksi di dashboard).
 4. Klik dua kali START.bat. Browser terbuka ke http://127.0.0.1:3389 .
 5. Login awal: admin / admin123 -> LANGSUNG ganti password di menu Akun (juga akun "user").
 6. Tambah meter lewat menu di dashboard (host/port gateway, ID slave, model).
+
+MENGUBAH KONEKSI DATABASE (server/port/user/password/nama database)
+1. Tutup START.bat.
+2. Jalankan UBAH-DATABASE.bat, isi data koneksi baru lalu password.
+   Jika gagal, koneksi lama tidak berubah.
+3. Jalankan START.bat lagi.
 
 AKSES DARI KOMPUTER LAIN
   http://<IP-PC-dashboard>:3389   (IP juga tampil di jendela START.bat)
@@ -32,7 +39,7 @@ JALAN OTOMATIS SAAT WINDOWS NYALA (opsional)
 
 BACKUP
 - Salin app\meters.db (daftar meter) dan app\database.json (koneksi + password MySQL) saat START.bat dihentikan.
-- Koneksi MySQL TIDAK bisa diubah dari dashboard. Untuk menggantinya: jalankan SETUP.bat lagi, lalu restart START.bat.
+- Koneksi MySQL tidak bisa diubah dari dashboard; gunakan UBAH-DATABASE.bat (lihat bagian di atas).
 - Data pembacaan ada di MySQL: backup dengan mekanisme MySQL Anda.
 - Jika MySQL putus, data ditahan di buffer lokal (maks. 500.000 baris) dan dikirim otomatis saat pulih.
 
@@ -43,5 +50,5 @@ MASALAH UMUM
 - Halaman tidak terbuka dari PC lain: cek firewall port (SETUP.bat sebagai admin) dan port.txt.
 - "Server lain sudah memakai meters.db": START.bat sudah berjalan di jendela lain.
 - Meter "Offline": cek IP/port gateway, ID slave, dan kabel RS485. Detail ada di tooltip badge dan app\dashboard.log.
-- Data tidak masuk MySQL: lihat halaman Database di dashboard; popup warning muncul bila koneksi putus.
+- Data tidak masuk MySQL: cek server/user/password dengan UBAH-DATABASE.bat. Popup warning muncul di dashboard bila koneksi putus; detail error ada di app\dashboard.log.
 - Retensi data lama (opsional): database\retention_mysql.sql, dijalankan DBA.

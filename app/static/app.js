@@ -9,7 +9,7 @@ const PHASE_MIN_V = 10; // di bawah ini fasa dianggap tidak terpasang / tidak be
 
 const st = {
   page: 'dashboard', devices: [], site: 'all', area: 'all', q: '', openId: null, editId: null,
-  dbConfig: null, dbStatus: {}, role: 'user', user: '',
+  role: 'user', user: '',
   users: [], editUserId: null, dashSite: 'all', dashArea: 'all', dashMetric: 'kw', trendPoints: [], trendMeta: null,
   trendPeriod: 'live', trendLabels: [], trendSummary: null, trendError: null, trendFetchedAt: 0
 };
@@ -341,42 +341,6 @@ async function removeDevice(d) {
     await load(); renderAll();
   } catch (err) { alert('Gagal menghapus: ' + err.message); }
 }
-
-// ---------- halaman Status Database (read-only) ----------
-// Koneksi MySQL diatur di backend (database.json via SETUP.bat); dashboard hanya menampilkan statusnya.
-const loadDbStatus = async () => { const r = await api('/api/db-status'); st.dbConfig = r.config; st.dbStatus = r.status; };
-
-function buildDatabase() {
-  $('#page').innerHTML = `
-  <div class="grid g4" id="db-kpi"></div>
-  <div class="card mt">
-    <div class="muted small">Koneksi MySQL diatur di sisi server (file <code>database.json</code>, dibuat oleh <code>SETUP.bat</code>)
-      dan tidak bisa diubah dari dashboard. Untuk mengganti server/user/password, jalankan <code>SETUP.bat</code> lagi lalu restart server.
-      Pembacaan semua meter disimpan ke tabel <code>power_readings</code> sesuai interval. Selama server database tidak terjangkau,
-      data ditahan di buffer lokal dan dikirim otomatis saat pulih.</div>
-  </div>`;
-}
-
-function dbStatusPill(c, s) {
-  if (!c) return '<span class="pill off">Belum dikonfigurasi</span>';
-  if (s.state === 'ok') return '<span class="pill ok">Terhubung · menyimpan</span>';
-  if (s.state === 'error') return `<span class="pill bad" title="${esc(s.error || '')}">Gagal</span>`;
-  return '<span class="pill warn">Menghubungkan…</span>';
-}
-
-function renderDb() {
-  const c = st.dbConfig, s = st.dbStatus;
-  const last = s.last_write ? new Date(s.last_write * 1000).toLocaleTimeString('id-ID') : DASH;
-  $('#db-kpi').innerHTML = `
-    <div class="card kpi elec"><div class="label">Server database</div><div class="value" style="font-size:20px">${c ? esc(c.host) + ':' + c.port : 'Belum diatur'}</div>
-      <div class="sub">${c ? esc(c.db_name) + ' · user ' + esc(c.db_user) + ' · simpan tiap ' + nf(c.store_interval_s, c.store_interval_s % 1 ? 1 : 0) + ' dtk' : 'Jalankan SETUP.bat di server'}</div></div>
-    <div class="card kpi elec"><div class="label">Status</div><div class="value" style="font-size:20px">${dbStatusPill(c, s)}</div>
-      <div class="sub">${s.state === 'error' ? esc(s.error) : '&nbsp;'}</div></div>
-    <div class="card kpi elec"><div class="label">Terakhir menyimpan</div><div class="value" style="font-size:22px">${last}</div></div>
-    <div class="card kpi elec"><div class="label">Baris tersimpan</div><div class="value">${nf(s.rows_total || 0)}</div><div class="sub">${s.pending ? nf(s.pending) + ' menunggu terkirim' : 'sejak server dijalankan'}</div></div>`;
-}
-
-async function refreshDb() { await loadDbStatus(); renderDb(); }
 
 // ---------- halaman Akun ----------
 const loadUsers = async () => { st.users = await api('/api/users'); };
@@ -830,14 +794,13 @@ const PAGES = {
     title: 'Listrik', build: buildPage, refresh: async () => { await load(); renderKpi(); renderRows(); renderDrawer(); },
     first: async () => { await load(); renderAll(); }
   },
-  database: { title: 'Status Database', build: buildDatabase, refresh: refreshDb, first: refreshDb },
   akun: { title: 'Akun', build: buildAccounts, refresh: refreshAccounts, first: refreshAccounts },
 };
 
 async function go() {
   const page = (location.hash || '#dashboard').slice(1);
   st.page = PAGES[page] ? page : 'dashboard';
-  if ((st.page === 'database' || st.page === 'akun') && st.role !== 'admin') { location.hash = '#dashboard'; return; }
+  if (st.page === 'akun' && st.role !== 'admin') { location.hash = '#dashboard'; return; }
   const p = PAGES[st.page];
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.dataset.page === st.page));
   $('#page-title').textContent = p.title;
