@@ -1,0 +1,47 @@
+SOSRO DASHBOARD - PANDUAN PEMASANGAN
+====================================
+
+KEBUTUHAN
+- Windows 10/11 atau Windows Server 2016+ (64-bit). Tidak perlu install Python.
+- MySQL/MariaDB milik Anda yang bisa dijangkau dari PC ini (IP, port, user, password).
+- User MySQL dengan hak penuh pada database dashboard, contoh (dijalankan DBA):
+    CREATE USER 'sosro'@'%' IDENTIFIED BY '<password-kuat>';
+    GRANT ALL PRIVILEGES ON `ois_sosro_pw`.* TO 'sosro'@'%';
+  (Jika database ois_sosro_pw belum ada dan user perlu membuatnya, beri hak CREATE secara global.)
+- PC dashboard harus bisa menjangkau gateway/meter Modbus (port 502 atau sesuai gateway).
+
+PEMASANGAN (sekali)
+1. Ekstrak folder ini ke lokasi tetap, mis. C:\SOSRO-Dashboard (jangan di Desktop/Downloads).
+2. Klik kanan SETUP.bat > Run as administrator.
+3. Isi: alamat MySQL, port, user, nama database, lalu password.
+   Berhasil jika muncul "[OK] Database ... dan tabel power_readings siap".
+4. Klik dua kali START.bat. Browser terbuka ke http://127.0.0.1:3389 .
+5. Login awal: admin / admin123 -> LANGSUNG ganti password di menu Akun (juga akun "user").
+6. Tambah meter lewat menu di dashboard (host/port gateway, ID slave, model).
+
+AKSES DARI KOMPUTER LAIN
+  http://<IP-PC-dashboard>:3389   (IP juga tampil di jendela START.bat)
+
+PORT 3389
+- 3389 = port Remote Desktop. Jika RDP aktif di PC ini, dashboard gagal start.
+  Ubah angka di port.txt (mis. 8080), lalu jalankan SETUP.bat lagi (untuk firewall) dan START.bat.
+
+JALAN OTOMATIS SAAT WINDOWS NYALA (opsional)
+  Task Scheduler > Create Task > Trigger "At startup" > Action: start program
+  C:\SOSRO-Dashboard\START.bat > centang "Run whether user is logged on or not" dan "Run with highest privileges".
+
+BACKUP
+- Salin app\meters.db (daftar meter) dan app\database.json (koneksi + password MySQL) saat START.bat dihentikan.
+- Koneksi MySQL TIDAK bisa diubah dari dashboard. Untuk menggantinya: jalankan SETUP.bat lagi, lalu restart START.bat.
+- Data pembacaan ada di MySQL: backup dengan mekanisme MySQL Anda.
+- Jika MySQL putus, data ditahan di buffer lokal (maks. 500.000 baris) dan dikirim otomatis saat pulih.
+
+UPDATE VERSI
+- Tutup START.bat, timpa isi folder app\ dengan file baru (JANGAN hapus app\meters.db dan app\database.json), jalankan START.bat.
+
+MASALAH UMUM
+- Halaman tidak terbuka dari PC lain: cek firewall port (SETUP.bat sebagai admin) dan port.txt.
+- "Server lain sudah memakai meters.db": START.bat sudah berjalan di jendela lain.
+- Meter "Offline": cek IP/port gateway, ID slave, dan kabel RS485. Detail ada di tooltip badge dan app\dashboard.log.
+- Data tidak masuk MySQL: lihat halaman Database di dashboard; popup warning muncul bila koneksi putus.
+- Retensi data lama (opsional): database\retention_mysql.sql, dijalankan DBA.

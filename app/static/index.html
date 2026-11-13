@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMS — Listrik</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">EMS</div>
+    <div><div class="brand-title">Energy Monitoring</div><div class="brand-sub">Modbus TCP</div></div>
+  </div>
+  <nav>
+    <a href="#dashboard" data-page="dashboard"><span class="nav-l"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</span></a>
+    <a href="#listrik" data-page="listrik"><span class="nav-l"><svg class="ico" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>Listrik</span></a>
+    <a href="#database" data-page="database" data-admin-only><span class="nav-l"><svg class="ico" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>Status Database</span></a>
+    <a href="#akun" data-page="akun" data-admin-only><span class="nav-l"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Akun</span></a>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="muted small" id="data-source">Menghubungkan…</div>
+    <button id="btn-fullscreen" class="fs-btn" type="button" aria-pressed="false"
+            title="Mode layar penuh: sidebar disembunyikan, tombol menu muncul">
+      <svg class="ico i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      <svg class="ico i-shrink" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+      <span id="fs-label">Layar penuh</span>
+    </button>
+  </div>
+</aside>
+<div id="nav-overlay"></div>
+
+<main>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button id="menu-toggle" class="menu-btn" aria-label="Buka menu" aria-expanded="false">
+        <svg class="i-bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h1 id="page-title">Listrik</h1>
+    </div>
+    <div class="topbar-right"><span class="live-dot"></span><span id="whoami" class="muted small"></span>
+      <span id="clock" class="muted"></span><button id="logout" class="ghost sm">Keluar</button></div>
+  </header>
+  <div id="page"></div>
+</main>
+
+<div id="drawer" class="drawer" hidden>
+  <div class="drawer-head"><h3 id="drawer-title"></h3><button id="drawer-close" class="ghost">Tutup</button></div>
+  <div id="drawer-body"></div>
+</div>
+
+<dialog id="form-dlg">
+  <form method="dialog" id="form">
+    <h3 id="form-title">Tambah perangkat</h3>
+    <div class="form-grid">
+      <label for="f-name">Nama titik ukur</label><input id="f-name" required placeholder="mis. Panel Utama">
+      <label for="f-site">Site (lokasi)</label>
+      <span class="pick-wrap">
+        <select id="f-site" class="pick"></select>
+        <input id="f-site-new" placeholder="Nama site baru…" hidden>
+      </span>
+      <label for="f-area">Area</label><input id="f-area" placeholder="mis. Produksi">
+      <label for="f-model">Model meter</label>
+      <select id="f-model"><option value="pm5330">Schneider PM5330</option><option value="sdm630">Eastron SDM630</option></select>
+      <label for="f-host">IP / host</label><input id="f-host" required placeholder="192.168.1.110">
+      <label for="f-port">Port</label><input id="f-port" type="number" min="1" max="65535" value="502" required>
+      <label for="f-unit_id">Unit ID (slave)</label><input id="f-unit_id" type="number" min="0" max="247" value="1" required>
+      <label for="f-function">Function</label>
+      <select id="f-function"><option value="input">Input register (FC4)</option><option value="holding">Holding register (FC3)</option></select>
+      <label for="f-byte_order">Urutan byte float32</label>
+      <select id="f-byte_order"><option value="big">big (ABCD)</option><option value="swap">swap (CDAB)</option><option value="badc">BADC</option><option value="little">little (DCBA)</option></select>
+      <label for="f-interval_s">Interval baca (detik)</label><input id="f-interval_s" type="number" min="0.5" step="0.5" value="2" required>
+      <label for="f-enabled">Aktif</label><input id="f-enabled" type="checkbox" checked style="justify-self:start">
+    </div>
+    <div id="form-err" class="form-err" hidden></div>
+    <div class="toolbar mt" style="margin-bottom:0">
+      <button type="submit" id="form-save">Simpan</button>
+      <button type="button" id="form-cancel" class="ghost">Batal</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="acc-dlg">
+  <form id="acc-form">
+    <h3 id="acc-title">Ubah password</h3>
+    <div class="form-grid">
+      <label for="a-password">Password baru</label>
+      <input id="a-password" type="password" autocomplete="new-password" minlength="6" required>
+    </div>
+    <div class="muted small mt">Minimal 6 karakter. Sesi lama akun ini akan berakhir.</div>
+    <div id="acc-err" class="form-err" hidden></div>
+    <div class="toolbar mt" style="margin-bottom:0">
+      <button type="submit">Simpan</button>
+      <button type="button" id="acc-cancel" class="ghost">Batal</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toasts"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

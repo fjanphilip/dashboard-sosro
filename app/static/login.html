@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk — EMS Listrik</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-body">
+  <div class="card login-card">
+    <div class="brand" style="padding:0 0 12px;border-bottom:0">
+      <div class="brand-mark">EMS</div>
+      <div><div class="brand-title" style="color:var(--ink)">Energy Monitoring</div><div class="brand-sub">Modbus TCP</div></div>
+    </div>
+    <h1>Masuk</h1>
+    <form id="login-form">
+      <label for="u">Username</label>
+      <input id="u" autocomplete="username" required>
+      <label for="p">Password</label>
+      <input id="p" type="password" autocomplete="current-password" required>
+      <div id="login-err" class="form-err" hidden></div>
+      <button type="submit">Masuk</button>
+    </form>
+  </div>
+  <script src="login.js"></script>
+</body>
+</html>
